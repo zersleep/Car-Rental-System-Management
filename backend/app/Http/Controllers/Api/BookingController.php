@@ -15,7 +15,19 @@ class BookingController extends Controller
      */
     public function index()
     {
-        $bookings = Booking::with('vehicle')->get();
+        $bookings = Booking::with('vehicle')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($booking) {
+                $customer = DB::table('customers')->where('id', $booking->customer_id)->first();
+                $booking->customer = $customer ? (object)[
+                    'id' => $customer->id,
+                    'full_name' => $customer->full_name,
+                    'email' => $customer->email,
+                    'phone' => $customer->phone,
+                ] : null;
+                return $booking;
+            });
         return response()->json($bookings);
     }
 
@@ -29,24 +41,24 @@ class BookingController extends Controller
             return response()->json([], 200);
         }
 
-        // Resolve customer_id for this user (by user_id, then by email)
-        $customerId = DB::table('customers')->where('user_id', $user->id)->value('id');
-        if (!$customerId && $user->email) {
-            $customerId = DB::table('customers')->where('email', $user->email)->value('id');
-        }
-        // If still none, create a record for this user
-        if (!$customerId) {
-            $customerId = DB::table('customers')->insertGetId([
-                'full_name' => $user->name ?? 'Customer',
-                'email' => $user->email,
-                'phone' => null,
-                'user_id' => $user->id,
-                'created_at' => now(),
-            ]);
+        // Gather ALL customer IDs linked to this user (by user_id OR by email)
+        $customerIds = DB::table('customers')
+            ->when($user->id, function ($q) use ($user) {
+                $q->orWhere('user_id', $user->id);
+            })
+            ->when($user->email, function ($q) use ($user) {
+                $q->orWhere('email', $user->email);
+            })
+            ->pluck('id')
+            ->unique()
+            ->values();
+
+        if ($customerIds->isEmpty()) {
+            return response()->json([]);
         }
 
         $bookings = Booking::with('vehicle')
-            ->where('customer_id', $customerId)
+            ->whereIn('customer_id', $customerIds)
             ->orderByDesc('created_at')
             ->get();
 
@@ -92,30 +104,46 @@ class BookingController extends Controller
                 );
             }
 
-            // Create or get customer
-            $customer = DB::table('customers')->where('email', $request->customer_info['email'])->first();
-            if (!$customer) {
+            // Create or get customer (and try to link to existing user by email)
+            $customerQuery = DB::table('customers')
+                ->where('email', $request->customer_info['email']);
+
+            $existingCustomer = $customerQuery->first();
+
+            // Try to find a user with this email to link accounts
+            $userId = DB::table('users')
+                ->where('email', $request->customer_info['email'])
+                ->value('id');
+
+            if ($existingCustomer) {
+                $customerId = $existingCustomer->id;
+                // If we found a matching user and the customer has no user_id yet, link it
+                if ($userId && !$existingCustomer->user_id) {
+                    DB::table('customers')
+                        ->where('id', $existingCustomer->id)
+                        ->update(['user_id' => $userId]);
+                }
+            } else {
                 $customerId = DB::table('customers')->insertGetId([
                     'full_name' => $request->customer_info['full_name'],
                     'email' => $request->customer_info['email'],
                     'phone' => $request->customer_info['phone'],
+                    'user_id' => $userId,
                     'created_at' => now(),
                 ]);
-            } else {
-                $customerId = $customer->id;
             }
 
-            // Create booking
+            // Create booking as Pending so staff must approve
             $booking = Booking::create([
                 'customer_id' => $customerId,
                 'vehicle_id' => $request->vehicle_id,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'total_price' => $request->total_price,
-                'status' => 'Confirmed',
+                'status' => 'Pending',
             ]);
 
-            // Update vehicle status to Reserved
+            // Immediately reserve the vehicle so others can't book the same dates
             $vehicle->update(['status' => 'Reserved']);
 
             DB::commit();

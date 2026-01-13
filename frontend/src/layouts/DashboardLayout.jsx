@@ -42,6 +42,8 @@ export default function DashboardLayout({ user, setUser }) {
         { to: baseUrl, icon: LayoutDashboard, label: "Dashboard" },
         { to: `${baseUrl}/vehicles`, icon: Car, label: "Vehicles" },
         { to: `${baseUrl}/bookings`, icon: Calendar, label: "Bookings" },
+        { to: `${baseUrl}/customers`, icon: Users, label: "Customers" },
+        { to: `${baseUrl}/staff`, icon: Users, label: "Staff" },
         {
           to: `${baseUrl}/settings/hero-image`,
           icon: Settings,
@@ -49,7 +51,11 @@ export default function DashboardLayout({ user, setUser }) {
         },
       ];
     } else if (role === "Staff") {
-      return [{ to: baseUrl, icon: Calendar, label: "Bookings" }];
+      return [
+        { to: baseUrl, icon: LayoutDashboard, label: "Dashboard" },
+        { to: `${baseUrl}/bookings`, icon: Calendar, label: "All Bookings" },
+        { to: `${baseUrl}/vehicles`, icon: Car, label: "Vehicles" },
+      ];
     } else {
       return [
         { to: baseUrl, icon: LayoutDashboard, label: "Dashboard" },

@@ -266,20 +266,20 @@ export default function HomePage() {
       </section>
 
       {/* Featured Cars */}
-      <section id="cars" className="py-20 bg-blue-50">
+      <section id="cars" className="py-12 bg-blue-50">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2 text-gray-800">
+              <h2 className="text-2xl font-bold tracking-tight mb-1 text-gray-800">
                 Popular Fleet
               </h2>
-              <p className="text-gray-600">
+              <p className="text-sm text-gray-600">
                 Chosen by thousands of happy travelers
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4">
             {[
               {
                 name: "Mercedes-Benz E220d 4Matic",
@@ -323,10 +323,24 @@ export default function HomePage() {
                 ],
                 image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80"
               },
+              {
+                name: "Tesla Model 3",
+                type: "Electric",
+                price: "$150",
+                specs: [
+                  "283 kW",
+                  "AWD",
+                  "0/100 km/h 4,4 s",
+                  "0 l/100 km",
+                  "Automatic",
+                  "Electric"
+                ],
+                image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80"
+              },
             ].map((car, i) => (
               <Card
                 key={i}
-                className="overflow-hidden bg-white border border-gray-200 shadow-md hover:shadow-xl transition-all group"
+                className="overflow-hidden bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all group"
               >
                 <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                   <img
@@ -335,34 +349,34 @@ export default function HomePage() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2 pt-3">
                   <div className="space-y-1">
-                    <CardTitle className="text-xl font-bold text-gray-900">{car.name}</CardTitle>
-                    <p className="text-sm text-gray-500">{car.type}</p>
+                    <CardTitle className="text-base font-bold text-gray-900 leading-tight">{car.name}</CardTitle>
+                    <p className="text-xs text-gray-500">{car.type}</p>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    {car.specs.map((spec, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                        <span>{spec}</span>
+                <CardContent className="space-y-2 py-2">
+                  <div className="space-y-1.5">
+                    {car.specs.slice(0, 4).map((spec, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5 text-xs text-gray-700">
+                        <CheckCircle2 className="w-3 h-3 text-blue-600 flex-shrink-0" />
+                        <span className="truncate">{spec}</span>
                       </div>
                     ))}
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between items-center border-t border-gray-100 pt-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">{car.price}</span>
-                    <span className="text-sm text-gray-500">/ day</span>
+                <CardFooter className="flex justify-between items-center border-t border-gray-100 pt-3 pb-3">
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg font-bold text-gray-900">{car.price}</span>
+                    <span className="text-xs text-gray-500">/day</span>
                   </div>
                   <Link to="/cars">
                     <Button
                       size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                      className="bg-blue-600 hover:bg-blue-700 text-white gap-1 text-xs px-3 py-1 h-7"
                     >
-                      Rent now
-                      <ArrowRight className="w-4 h-4" />
+                      Rent
+                      <ArrowRight className="w-3 h-3" />
                     </Button>
                   </Link>
                 </CardFooter>
@@ -454,95 +468,97 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "BMW 5 Series",
-                type: "Sedan",
-                price: "$199",
-                specs: [
-                  "185 kW",
-                  "xDrive",
-                  "0/100 km/h 6,1 s",
-                  "6,2 - 7,5 l/100 km",
-                  "Automatic",
-                  "Petrol"
-                ],
-                image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80"
-              },
-              {
-                name: "Mercedes-Benz GLE",
-                type: "SUV",
-                price: "$249",
-                specs: [
-                  "270 kW",
-                  "4Matic",
-                  "0/100 km/h 5,3 s",
-                  "8,1 - 9,8 l/100 km",
-                  "Automatic",
-                  "Petrol"
-                ],
-                image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80"
-              },
-              {
-                name: "Audi A4",
-                type: "Sedan",
-                price: "$179",
-                specs: [
-                  "140 kW",
-                  "Front-wheel",
-                  "0/100 km/h 8,5 s",
-                  "5,1 - 6,2 l/100 km",
-                  "Automatic",
-                  "Diesel"
-                ],
-                image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=800&q=80"
-              },
-            ].map((car, i) => (
-              <Card
-                key={i}
-                className="overflow-hidden bg-white border border-gray-200 shadow-md hover:shadow-xl transition-all group"
-              >
-                <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-                  <img
-                    src={car.image}
-                    alt={car.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardHeader className="pb-3">
-                  <div className="space-y-1">
-                    <CardTitle className="text-xl font-bold text-gray-900">{car.name}</CardTitle>
-                    <p className="text-sm text-gray-500">{car.type}</p>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  name: "BMW 5 Series",
+                  type: "Sedan",
+                  price: "$199",
+                  specs: [
+                    "185 kW",
+                    "xDrive",
+                    "0/100 km/h 6,1 s",
+                    "6,2 - 7,5 l/100 km",
+                    "Automatic",
+                    "Petrol"
+                  ],
+                  image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80"
+                },
+                {
+                  name: "Mercedes-Benz GLE",
+                  type: "SUV",
+                  price: "$249",
+                  specs: [
+                    "270 kW",
+                    "4Matic",
+                    "0/100 km/h 5,3 s",
+                    "8,1 - 9,8 l/100 km",
+                    "Automatic",
+                    "Petrol"
+                  ],
+                  image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80"
+                },
+                {
+                  name: "Audi A4",
+                  type: "Sedan",
+                  price: "$179",
+                  specs: [
+                    "140 kW",
+                    "Front-wheel",
+                    "0/100 km/h 8,5 s",
+                    "5,1 - 6,2 l/100 km",
+                    "Automatic",
+                    "Diesel"
+                  ],
+                  image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=800&q=80"
+                },
+              ].map((car, i) => (
+                <Card
+                  key={i}
+                  className="overflow-hidden bg-white border border-gray-200 shadow-md hover:shadow-xl transition-all group"
+                >
+                  <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+                    <img
+                      src={car.image}
+                      alt={car.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    {car.specs.map((spec, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                        <span>{spec}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between items-center border-t border-gray-100 pt-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">{car.price}</span>
-                    <span className="text-sm text-gray-500">/ day</span>
-                  </div>
-                  <Link to="/cars">
-                    <Button
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
-                    >
-                      View All
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))}
+                  <CardHeader className="pb-3">
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-bold text-gray-900">{car.name}</CardTitle>
+                      <p className="text-sm text-gray-500">{car.type}</p>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      {car.specs.map((spec, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                          <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                          <span>{spec}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between items-center border-t border-gray-100 pt-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-gray-900">{car.price}</span>
+                      <span className="text-sm text-gray-500">/ day</span>
+                    </div>
+                    <Link to="/cars">
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                      >
+                        View All
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
           </div>
           <div className="text-center mt-8">
             <Link to="/cars">

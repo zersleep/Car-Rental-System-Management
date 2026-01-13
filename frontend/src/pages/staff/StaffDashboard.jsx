@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { dashboardAPI, bookingAPI, rentalAPI } from "@/services/api";
-import { RefreshCw, CheckCircle2, Car, XCircle, Calendar } from "lucide-react";
+import { RefreshCw, CheckCircle2, Car, XCircle, Calendar, DollarSign, Phone, Mail, AlertCircle } from "lucide-react";
 import { useToast } from "@/lib/toastCore";
 
 const StatCard = ({ title, value }) => (
@@ -154,8 +154,6 @@ export default function StaffDashboard() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // auto-refresh every 10s
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -191,13 +189,30 @@ export default function StaffDashboard() {
   const returns = data.today_returns || [];
   const overdue = data.overdue_rentals || [];
   const counts = data.counts || {};
+  const todayRevenue = data.today_revenue || 0;
 
   const columnsPickups = [
     { key: "id", label: "Booking ID" },
     {
       key: "customer",
       label: "Customer",
-      render: (r) => r.customer?.full_name || "N/A",
+      render: (r) => (
+        <div>
+          <div className="font-medium">{r.customer?.full_name || "N/A"}</div>
+          {r.customer?.phone && (
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Phone className="w-3 h-3" />
+              {r.customer.phone}
+            </div>
+          )}
+          {r.customer?.email && (
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Mail className="w-3 h-3" />
+              {r.customer.email}
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       key: "vehicle",
@@ -207,6 +222,11 @@ export default function StaffDashboard() {
     },
     { key: "start_date", label: "Pickup" },
     { key: "end_date", label: "Return" },
+    {
+      key: "amount",
+      label: "Amount",
+      render: (r) => `$${(parseFloat(r.total_price) || 0).toFixed(2)}`,
+    },
     {
       key: "status",
       label: "Status",
@@ -220,7 +240,23 @@ export default function StaffDashboard() {
     {
       key: "customer",
       label: "Customer",
-      render: (r) => r.booking?.customer?.full_name || "N/A",
+      render: (r) => (
+        <div>
+          <div className="font-medium">{r.booking?.customer?.full_name || "N/A"}</div>
+          {r.booking?.customer?.phone && (
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Phone className="w-3 h-3" />
+              {r.booking.customer.phone}
+            </div>
+          )}
+          {r.booking?.customer?.email && (
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Mail className="w-3 h-3" />
+              {r.booking.customer.email}
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       key: "vehicle",
@@ -259,10 +295,20 @@ export default function StaffDashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard title="Pending Approvals" value={counts.pending_bookings ?? 0} />
         <StatCard title="Today's Pickups" value={counts.today_pickups ?? 0} />
         <StatCard title="Today's Returns" value={counts.today_returns ?? 0} />
-        <StatCard title="Overdue Rentals" value={counts.overdue_rentals ?? 0} />
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              ${todayRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="space-y-6">

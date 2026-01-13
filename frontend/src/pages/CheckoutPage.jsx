@@ -102,10 +102,19 @@ export default function CheckoutPage() {
                 },
             };
 
-            // Use public booking endpoint
+            // Use public booking endpoint (creates a Pending booking)
             await api.post("/bookings/public", bookingData);
-            addToast("Booking confirmed successfully!", "success");
-            navigate("/cars");
+            addToast("Booking submitted! Waiting for staff approval.", "success");
+
+            // If user is logged in as a customer, send them to their dashboard,
+            // otherwise go back to cars.
+            const raw = localStorage.getItem("user");
+            const u = raw ? JSON.parse(raw) : null;
+            if (u && u.role === "Customer") {
+                navigate("/dashboard");
+            } else {
+                navigate("/cars");
+            }
         } catch (error) {
             console.error("Error creating booking:", error);
             addToast(

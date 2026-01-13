@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\RentalController;
+use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\UserController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -32,11 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/vehicles/{id}', [VehicleController::class, 'update']);
     Route::delete('/vehicles/{id}', [VehicleController::class, 'destroy']);
 
-    // Bookings (protected)
-    Route::apiResource('bookings', BookingController::class);
+    // Bookings (protected) - specific routes before resource routes
     Route::get('/bookings/mine', [BookingController::class, 'mine']);
     Route::post('/bookings/{id}/approve', [BookingController::class, 'approve']);
     Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+    Route::apiResource('bookings', BookingController::class);
     
     // Public booking creation (for checkout)
     Route::post('/bookings/public', [BookingController::class, 'storePublic']);
@@ -49,4 +51,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin-only settings endpoints
     Route::post('/settings/hero-image', [App\Http\Controllers\Api\SettingsController::class, 'updateHeroImage']);
     Route::delete('/settings/hero-image', [App\Http\Controllers\Api\SettingsController::class, 'deleteHeroImage']);
+
+    // Admin-only: Customer and User management
+    Route::apiResource('customers', CustomerController::class);
+    Route::apiResource('users', UserController::class);
 });

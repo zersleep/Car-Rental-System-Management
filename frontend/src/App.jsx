@@ -10,10 +10,14 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import VehicleManagement from "./pages/admin/VehicleManagement";
 import BookingManagement from "./pages/admin/BookingManagement";
+import CustomerManagement from "./pages/admin/CustomerManagement";
+import StaffManagement from "./pages/admin/StaffManagement";
 import HeroImageSettings from "./pages/admin/HeroImageSettings";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import CustomerBookings from "./pages/customer/CustomerBookings";
 import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffBookings from "./pages/staff/StaffBookings";
+import StaffVehicles from "./pages/staff/StaffVehicles";
 import CarsPage from "./pages/CarsPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import { authAPI } from "./services/api";
@@ -87,11 +91,13 @@ function App() {
             >
               <Route index element={<AdminDashboard />} />
               <Route path="vehicles" element={<VehicleManagement />} />
-              <Route path="bookings" element={<BookingManagement />} />{" "}
+              <Route path="bookings" element={<BookingManagement />} />
+              <Route path="customers" element={<CustomerManagement />} />
+              <Route path="staff" element={<StaffManagement />} />
               <Route
                 path="settings/hero-image"
                 element={<HeroImageSettings />}
-              />{" "}
+              />
             </Route>
 
             {/* Staff Routes */}
@@ -104,6 +110,8 @@ function App() {
               }
             >
               <Route index element={<StaffDashboard />} />
+              <Route path="bookings" element={<StaffBookings />} />
+              <Route path="vehicles" element={<StaffVehicles />} />
             </Route>
 
             {/* Customer Routes */}

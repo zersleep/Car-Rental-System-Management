@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { dashboardAPI } from "@/services/api";
-import { Car, Calendar, Wrench, Activity, Plus, RefreshCw, ArrowRight } from "lucide-react";
+import { Car, Calendar, Wrench, Activity, Plus, RefreshCw, ArrowRight, DollarSign, Users, AlertCircle, TrendingUp } from "lucide-react";
 import { useToast } from "@/lib/toastCore";
 
 const StatCard = ({ title, value, icon: Icon, description, color = "blue" }) => (
@@ -86,14 +86,21 @@ export default function AdminDashboard() {
     );
   }
 
-  const { summary, recent_bookings, vehicle_status } = data;
+  const { summary, recent_bookings, vehicle_status, revenue, booking_status, top_customers } = data;
 
   const stats = [
     {
-      title: "Total Vehicles",
-      value: summary.total_vehicles ?? "—",
-      icon: Car,
-      description: `${summary.available_vehicles ?? 0} available`,
+      title: "Total Revenue",
+      value: `$${(parseFloat(revenue?.total) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      icon: DollarSign,
+      description: `$${(parseFloat(revenue?.monthly) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month`,
+      color: "green",
+    },
+    {
+      title: "Total Customers",
+      value: summary.total_customers ?? "—",
+      icon: Users,
+      description: `${summary.pending_bookings ?? 0} pending approvals`,
       color: "blue",
     },
     {
@@ -101,21 +108,14 @@ export default function AdminDashboard() {
       value: summary.total_bookings ?? "—",
       icon: Calendar,
       description: `${summary.active_rentals ?? 0} active rentals`,
-      color: "green",
+      color: "purple",
     },
     {
       title: "Available Vehicles",
       value: summary.available_vehicles ?? "—",
       icon: Activity,
-      description: "Ready to be rented",
+      description: `${summary.total_vehicles ?? 0} total in fleet`,
       color: "green",
-    },
-    {
-      title: "Active Rentals",
-      value: summary.active_rentals ?? "—",
-      icon: Wrench,
-      description: "Currently out with customers",
-      color: "purple",
     },
   ];
 
@@ -124,10 +124,24 @@ export default function AdminDashboard() {
     return acc;
   }, {}) || {};
 
+  const bookingStatusMap = booking_status?.reduce((acc, item) => {
+    acc[item.status] = item.total;
+    return acc;
+  }, {}) || {};
+
   const statusRows = [
     { label: "Available", value: statusMap.Available || 0, color: "text-green-600" },
+    { label: "Reserved", value: statusMap.Reserved || 0, color: "text-blue-600" },
     { label: "Rented", value: statusMap.Rented || 0, color: "text-red-600" },
     { label: "Maintenance", value: statusMap.Maintenance || 0, color: "text-orange-600" },
+  ];
+
+  const bookingStatusRows = [
+    { label: "Pending", value: bookingStatusMap.Pending || 0, color: "text-yellow-600" },
+    { label: "Confirmed", value: bookingStatusMap.Confirmed || 0, color: "text-blue-600" },
+    { label: "CheckedOut", value: bookingStatusMap.CheckedOut || 0, color: "text-purple-600" },
+    { label: "Returned", value: bookingStatusMap.Returned || 0, color: "text-green-600" },
+    { label: "Cancelled", value: bookingStatusMap.Cancelled || 0, color: "text-red-600" },
   ];
 
   return (
@@ -179,6 +193,7 @@ export default function AdminDashboard() {
                       <th className="py-2 pr-4">Customer</th>
                       <th className="py-2 pr-4">Vehicle</th>
                       <th className="py-2 pr-4">Status</th>
+                      <th className="py-2 pr-4">Amount</th>
                       <th className="py-2 pr-4">Pickup</th>
                       <th className="py-2 pr-4">Return</th>
                     </tr>
@@ -196,6 +211,7 @@ export default function AdminDashboard() {
                         <td className="py-2 pr-4">
                           <StatusBadge status={b.status} />
                         </td>
+                        <td className="py-2 pr-4">${(parseFloat(b.total_price) || 0).toFixed(2)}</td>
                         <td className="py-2 pr-4">{b.start_date}</td>
                         <td className="py-2 pr-4">{b.end_date}</td>
                       </tr>
@@ -209,24 +225,88 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Vehicle Status Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {statusRows.map((s) => (
-              <div key={s.label} className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{s.label}</span>
-                <span className={`text-lg font-semibold ${s.color}`}>{s.value}</span>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Today</span>
+                <span className="text-lg font-semibold text-green-600">
+                  ${(parseFloat(revenue?.today) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
               </div>
-            ))}
-            <div className="pt-4 border-t">
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/admin/vehicles">Manage Vehicles</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">This Month</span>
+                <span className="text-lg font-semibold text-blue-600">
+                  ${(parseFloat(revenue?.monthly) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Total Revenue</span>
+                  <span className="text-xl font-bold text-green-600">
+                    ${(parseFloat(revenue?.total) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Booking Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {bookingStatusRows.map((s) => (
+                <div key={s.label} className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{s.label}</span>
+                  <span className={`text-lg font-semibold ${s.color}`}>{s.value}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {top_customers && top_customers.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Customers</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {top_customers.map((customer, idx) => (
+                  <div key={customer.id} className="flex items-center justify-between border-b last:border-0 pb-2 last:pb-0">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{customer.full_name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {customer.booking_count} bookings • ${(parseFloat(customer.total_spent) || 0).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Vehicle Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {statusRows.map((s) => (
+                <div key={s.label} className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{s.label}</span>
+                  <span className={`text-lg font-semibold ${s.color}`}>{s.value}</span>
+                </div>
+              ))}
+              <div className="pt-4 border-t">
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/admin/vehicles">Manage Vehicles</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ import {
     MapPin,
     Filter,
 } from "lucide-react";
-import { vehicleAPI } from "@/services/api";
+import { vehicleAPI, authAPI } from "@/services/api";
 import { useToast } from "@/lib/toastCore";
 
 export default function CarsPage() {
@@ -116,38 +116,102 @@ export default function CarsPage() {
                         >
                             Cars
                         </Link>
-                        <a
-                            href="#about"
+                        <Link
+                            to="/#best-sellers"
                             className="hover:text-blue-600 transition-colors text-gray-700"
                             onClick={(e) => {
                                 e.preventDefault();
-                                window.location.href = "/#about";
+                                navigate('/');
+                                setTimeout(() => {
+                                    document.getElementById('best-sellers')?.scrollIntoView({ behavior: 'smooth' });
+                                }, 100);
+                            }}
+                        >
+                            Best Sellers
+                        </Link>
+                        <Link
+                            to="/#about"
+                            className="hover:text-blue-600 transition-colors text-gray-700"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate('/');
+                                setTimeout(() => {
+                                    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                                }, 100);
                             }}
                         >
                             About
-                        </a>
-                        <a
-                            href="#contact"
+                        </Link>
+                        <Link
+                            to="/#contact"
                             className="hover:text-blue-600 transition-colors text-gray-700"
                             onClick={(e) => {
                                 e.preventDefault();
-                                window.location.href = "/#contact";
+                                navigate('/');
+                                setTimeout(() => {
+                                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                                }, 100);
                             }}
                         >
                             Contact
-                        </a>
+                        </Link>
                     </nav>
                     <div className="flex items-center gap-4">
-                        <Link to="/login">
-                            <Button variant="ghost" size="sm" className="text-gray-700 hover:text-blue-600">
-                                Sign In
-                            </Button>
-                        </Link>
-                        <Link to="/register">
-                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                                Sign Up
-                            </Button>
-                        </Link>
+                        {(() => {
+                            try {
+                                const raw = localStorage.getItem("user");
+                                const u = raw ? JSON.parse(raw) : null;
+                                if (u) {
+                                    const base =
+                                        u.role === "Customer"
+                                            ? "/dashboard"
+                                            : `/${u.role?.toLowerCase()}`;
+                                    return (
+                                        <>
+                                            <Link to={base}>
+                                                <Button variant="ghost" size="sm" className="text-gray-700 hover:text-blue-600">
+                                                    Dashboard
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300"
+                                                onClick={async () => {
+                                                    try {
+                                                        await authAPI.logout();
+                                                        addToast("Logged out successfully", "success");
+                                                    } catch (e) {
+                                                        addToast("Logout failed", "error");
+                                                    }
+                                                    localStorage.removeItem("token");
+                                                    localStorage.removeItem("user");
+                                                    setTimeout(() => window.location.reload(), 600);
+                                                }}
+                                            >
+                                                Sign Out
+                                            </Button>
+                                        </>
+                                    );
+                                }
+                            } catch (e) {
+                                // ignore
+                            }
+                            return (
+                                <>
+                                    <Link to="/login">
+                                        <Button variant="ghost" size="sm" className="text-gray-700 hover:text-blue-600">
+                                            Sign In
+                                        </Button>
+                                    </Link>
+                                    <Link to="/register">
+                                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                                            Sign Up
+                                        </Button>
+                                    </Link>
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
             </header>
