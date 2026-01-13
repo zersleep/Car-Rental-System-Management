@@ -29,14 +29,20 @@ class BookingController extends Controller
             return response()->json([], 200);
         }
 
-        // Resolve customer_id for this user
+        // Resolve customer_id for this user (by user_id, then by email)
         $customerId = DB::table('customers')->where('user_id', $user->id)->value('id');
         if (!$customerId && $user->email) {
             $customerId = DB::table('customers')->where('email', $user->email)->value('id');
         }
-
+        // If still none, create a record for this user
         if (!$customerId) {
-            return response()->json([], 200);
+            $customerId = DB::table('customers')->insertGetId([
+                'full_name' => $user->name ?? 'Customer',
+                'email' => $user->email,
+                'phone' => null,
+                'user_id' => $user->id,
+                'created_at' => now(),
+            ]);
         }
 
         $bookings = Booking::with('vehicle')
