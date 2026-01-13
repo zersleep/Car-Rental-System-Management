@@ -57,8 +57,34 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="p-8">Loading...</div>;
-  if (!data?.summary) return <div className="p-8">No data available.</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data?.summary) {
+    return (
+      <div className="p-8">
+        <div className="text-center py-12">
+          <Car className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">No Data Available</h2>
+          <p className="text-muted-foreground mb-4">
+            Please seed the database to see dashboard data.
+          </p>
+          <Button onClick={fetchData}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const { summary, recent_bookings, vehicle_status } = data;
 

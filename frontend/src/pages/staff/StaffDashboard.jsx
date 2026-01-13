@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { dashboardAPI, bookingAPI, rentalAPI } from "@/services/api";
-import { RefreshCw, CheckCircle2, Car, XCircle } from "lucide-react";
+import { RefreshCw, CheckCircle2, Car, XCircle, Calendar } from "lucide-react";
 import { useToast } from "@/lib/toastCore";
 
 const StatCard = ({ title, value }) => (
@@ -154,10 +154,38 @@ export default function StaffDashboard() {
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(fetchData, 30000); // auto-refresh every 30s
+    return () => clearInterval(interval);
   }, []);
 
-  if (loading) return <div className="p-8">Loading...</div>;
-  if (!data || data.role !== "Staff") return <div className="p-8">No data available.</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.role !== "Staff") {
+    return (
+      <div className="p-8">
+        <div className="text-center py-12">
+          <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">No Data Available</h2>
+          <p className="text-muted-foreground mb-4">
+            {!data ? "Failed to load dashboard data." : "You don't have access to this dashboard."}
+          </p>
+          <Button onClick={fetchData}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const pickups = data.today_pickups || [];
   const returns = data.today_returns || [];

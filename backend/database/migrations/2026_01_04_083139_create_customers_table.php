@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('full_name', 100);
+            $table->string('email', 100)->nullable();
+            $table->string('phone', 20)->nullable();
             $table->timestamps();
+            
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

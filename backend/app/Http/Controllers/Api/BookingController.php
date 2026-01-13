@@ -20,6 +20,34 @@ class BookingController extends Controller
     }
 
     /**
+     * List bookings for the authenticated customer only.
+     */
+    public function mine(Request $request)
+    {
+        $user = $request->user();
+        if (!$user || $user->role !== 'Customer') {
+            return response()->json([], 200);
+        }
+
+        // Resolve customer_id for this user
+        $customerId = DB::table('customers')->where('user_id', $user->id)->value('id');
+        if (!$customerId && $user->email) {
+            $customerId = DB::table('customers')->where('email', $user->email)->value('id');
+        }
+
+        if (!$customerId) {
+            return response()->json([], 200);
+        }
+
+        $bookings = Booking::with('vehicle')
+            ->where('customer_id', $customerId)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json($bookings);
+    }
+
+    /**
      * Store a newly created resource in storage (public).
      */
     public function storePublic(Request $request)

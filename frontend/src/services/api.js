@@ -57,6 +57,7 @@ export const vehicleAPI = {
 // Booking API
 export const bookingAPI = {
   getAll: () => api.get("/bookings"),
+  getMine: () => api.get("/bookings/mine"),
   getOne: (id) => api.get(`/bookings/${id}`),
   create: (data) => api.post("/bookings", data),
   update: (id, data) => api.put(`/bookings/${id}`, data),

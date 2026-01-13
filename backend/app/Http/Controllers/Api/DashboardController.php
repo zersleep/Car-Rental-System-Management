@@ -16,7 +16,6 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if ($user->role === 'Admin') {
-            // Summary
             $summary = [
                 'total_vehicles' => Vehicle::count(),
                 'total_bookings' => Booking::count(),
@@ -24,14 +23,16 @@ class DashboardController extends Controller
                 'active_rentals' => Rental::where('status', 'Active')->count(),
             ];
 
-            // Recent bookings (10)
-            $recentBookings = Booking::with([
-                'vehicle:id,brand,model',
-                'customer:id,full_name',
-            ])
+            // Recent bookings (10) - load customer data manually
+            $recentBookings = Booking::with('vehicle:id,brand,model')
                 ->orderByDesc('created_at')
                 ->limit(10)
-                ->get(['id', 'customer_id', 'vehicle_id', 'status', 'start_date', 'end_date', 'created_at']);
+                ->get(['id', 'customer_id', 'vehicle_id', 'status', 'start_date', 'end_date', 'created_at'])
+                ->map(function ($booking) {
+                    $customer = DB::table('customers')->where('id', $booking->customer_id)->first();
+                    $booking->customer = $customer ? (object)['id' => $customer->id, 'full_name' => $customer->full_name] : null;
+                    return $booking;
+                });
 
             // Vehicle status breakdown
             $vehicleStatus = Vehicle::select('status', DB::raw('count(*) as total'))
@@ -50,36 +51,49 @@ class DashboardController extends Controller
         if ($user->role === 'Staff') {
             $today = now()->toDateString();
 
-            $todayPickups = Booking::with([
-                'customer:id,full_name',
-                'vehicle:id,brand,model,plate_number',
-            ])
+            // Today's pickups - load customer manually
+            $todayPickups = Booking::with('vehicle:id,brand,model,plate_number')
                 ->whereDate('start_date', $today)
                 ->whereIn('status', ['Pending', 'Confirmed'])
                 ->orderBy('start_date')
-                ->get(['id', 'customer_id', 'vehicle_id', 'status', 'start_date', 'end_date']);
+                ->get(['id', 'customer_id', 'vehicle_id', 'status', 'start_date', 'end_date'])
+                ->map(function ($booking) {
+                    $customer = DB::table('customers')->where('id', $booking->customer_id)->first();
+                    $booking->customer = $customer ? (object)['id' => $customer->id, 'full_name' => $customer->full_name] : null;
+                    return $booking;
+                });
 
-            $todayReturns = Rental::with([
-                'booking.customer:id,full_name',
-                'booking.vehicle:id,brand,model,plate_number',
-            ])
+            // Today's returns - load booking and customer manually
+            $todayReturns = Rental::with('booking.vehicle:id,brand,model,plate_number')
                 ->where('status', 'Active')
                 ->whereHas('booking', function ($q) use ($today) {
                     $q->whereDate('end_date', $today);
                 })
                 ->orderBy('checkout_time')
-                ->get(['id', 'booking_id', 'checkout_time', 'return_time', 'status']);
+                ->get(['id', 'booking_id', 'checkout_time', 'return_time', 'status'])
+                ->map(function ($rental) {
+                    if ($rental->booking) {
+                        $customer = DB::table('customers')->where('id', $rental->booking->customer_id)->first();
+                        $rental->booking->customer = $customer ? (object)['id' => $customer->id, 'full_name' => $customer->full_name] : null;
+                    }
+                    return $rental;
+                });
 
-            $overdueRentals = Rental::with([
-                'booking.customer:id,full_name',
-                'booking.vehicle:id,brand,model,plate_number',
-            ])
+            // Overdue rentals - load booking and customer manually
+            $overdueRentals = Rental::with('booking.vehicle:id,brand,model,plate_number')
                 ->where('status', 'Active')
                 ->whereHas('booking', function ($q) use ($today) {
                     $q->whereDate('end_date', '<', $today);
                 })
                 ->orderBy('checkout_time')
-                ->get(['id', 'booking_id', 'checkout_time', 'return_time', 'status']);
+                ->get(['id', 'booking_id', 'checkout_time', 'return_time', 'status'])
+                ->map(function ($rental) {
+                    if ($rental->booking) {
+                        $customer = DB::table('customers')->where('id', $rental->booking->customer_id)->first();
+                        $rental->booking->customer = $customer ? (object)['id' => $customer->id, 'full_name' => $customer->full_name] : null;
+                    }
+                    return $rental;
+                });
 
             return response()->json([
                 'role' => 'Staff',
@@ -107,11 +121,14 @@ class DashboardController extends Controller
                     ->value('id');
             }
 
+            // If still no customer, create one for this user
             if (!$customerId) {
-                return response()->json([
-                    'role' => 'Customer',
-                    'active_booking' => null,
-                    'booking_history' => [],
+                $customerId = DB::table('customers')->insertGetId([
+                    'full_name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => null,
+                    'user_id' => $user->id,
+                    'created_at' => now(),
                 ]);
             }
 

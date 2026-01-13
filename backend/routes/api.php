@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Bookings (protected)
     Route::apiResource('bookings', BookingController::class);
+    Route::get('/bookings/mine', [BookingController::class, 'mine']);
     Route::post('/bookings/{id}/approve', [BookingController::class, 'approve']);
     Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     

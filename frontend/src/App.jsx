@@ -12,6 +12,7 @@ import VehicleManagement from "./pages/admin/VehicleManagement";
 import BookingManagement from "./pages/admin/BookingManagement";
 import HeroImageSettings from "./pages/admin/HeroImageSettings";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
+import CustomerBookings from "./pages/customer/CustomerBookings";
 import StaffDashboard from "./pages/staff/StaffDashboard";
 import CarsPage from "./pages/CarsPage";
 import CheckoutPage from "./pages/CheckoutPage";
@@ -115,6 +116,7 @@ function App() {
               }
             >
               <Route index element={<CustomerDashboard />} />
+              <Route path="bookings" element={<CustomerBookings />} />
             </Route>
           </Routes>
         </ToastProvider>

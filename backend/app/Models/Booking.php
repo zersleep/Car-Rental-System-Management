@@ -26,8 +26,6 @@ class Booking extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
+    // Note: Customer relationship handled manually in controllers
+    // since we're using DB table directly instead of Eloquent model
 }
